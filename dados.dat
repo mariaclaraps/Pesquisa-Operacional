@@ -1,0 +1,65 @@
+# dados.dat - base de dados CVRP com 15 clientes (nomes de conjuntos renomeados)
+set CLIENTS := 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15;
+set VERTICES := 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15;
+set VEHICLES := 1 2 3;
+
+param Q := 200;        # capacidade de cada veículo
+param depot := 0;
+
+# Coordenadas (x,y) para depósito (0) e clientes (1..15)
+param xcoord :=
+0  50
+1  12
+2  44
+3  55
+4  23
+5  70
+6  15
+7  90
+8  60
+9  5
+10 40
+11 80
+12 30
+13 50
+14 10
+15 85
+;
+
+param ycoord :=
+0   0
+1  38
+2  81
+3  22
+4  65
+5  50
+6  10
+7  85
+8  70
+9  55
+10 20
+11 10
+12 40
+13 50
+14 80
+15 45
+;
+
+# Demandas (kg) apenas para clientes 1..15
+param d :=
+1  15
+2  20
+3  18
+4  12
+5  25
+6  10
+7  30
+8  22
+9  16
+10 14
+11 28
+12 11
+13 24
+14 9
+15 21
+;

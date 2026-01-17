@@ -1,0 +1,23 @@
+# run.run - execução
+reset;
+model modelo.mod;
+data dados.dat;
+
+# preencher a matriz de custos agora que os dados (xcoord,ycoord, VERTICES) existem
+let {i in VERTICES, j in VERTICES} c[i,j] := sqrt((xcoord[i]-xcoord[j])^2 + (ycoord[i]-ycoord[j])^2);
+
+# ajuste o solver conforme sua licença
+# option solver gurobi;
+# option solver cplex;
+option solver cbc;
+
+solve;
+
+display Z;
+
+for {k in VEHICLES} {
+  printf "\nVeiculo %d:\n", k;
+  for {i in VERTICES, j in VERTICES: i<>j}
+    if x[i,j,k] > 0.5 then
+      printf "  %d -> %d\n", i, j;
+}
