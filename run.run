@@ -1,23 +1,72 @@
-# run.run - execução
 reset;
 model modelo.mod;
 data dados.dat;
-
-# preencher a matriz de custos agora que os dados (xcoord,ycoord, VERTICES) existem
-let {i in VERTICES, j in VERTICES} c[i,j] := sqrt((xcoord[i]-xcoord[j])^2 + (ycoord[i]-ycoord[j])^2);
-
-# ajuste o solver conforme sua licença
-# option solver gurobi;
-# option solver cplex;
 option solver cbc;
 
 solve;
 
 display Z;
 
+printf "\n=== RESULTADOS ORGANIZADOS ===\n\n";
+
+# ==============================
+# DECLARAÇÕES
+# ==============================
+param rota{VEHICLES} symbolic;
+param atual{VEHICLES} integer;
+param visitados{VEHICLES} default 0;
+param carga{VEHICLES} default 0;
+param encontrou{VEHICLES} default 0;
+
+# ==============================
+# PROCESSAMENTO
+# ==============================
 for {k in VEHICLES} {
-  printf "\nVeiculo %d:\n", k;
-  for {i in VERTICES, j in VERTICES: i<>j}
-    if x[i,j,k] > 0.5 then
-      printf "  %d -> %d\n", i, j;
+
+    let rota[k] := "0";
+    let atual[k] := depot;
+    let visitados[k] := 0;
+    let carga[k] := 0;
+
+    repeat {
+
+        let encontrou[k] := 0;
+
+        for {j in VERTICES: j != atual[k]} {
+            if x[atual[k], j, k] > 0.5 then {
+
+                let rota[k] := rota[k] & " -> " & j;
+
+                if j != depot then {
+                    let carga[k] := carga[k] + d[j];
+                    let visitados[k] := visitados[k] + 1;
+                }
+
+                let atual[k] := j;
+                let encontrou[k] := 1;
+                break;
+            }
+        }
+
+        if encontrou[k] = 0 then break;
+
+    } until atual[k] = depot;
+
+    printf "Veículo %d:\n", k;
+    printf "  Rota: %s\n", rota[k];
+    printf "  Clientes: %d, Carga: %d kg\n\n",
+           visitados[k], carga[k];
 }
+
+
+# ==============================
+# EXPORTAR ROTAS PARA CSV
+# ==============================
+
+printf "veiculo,origem,destino\n" > "rotas.csv";
+
+for {k in VEHICLES, i in VERTICES, j in VERTICES: x[i,j,k] > 0.5} {
+    printf "%d,%d,%d\n", k, i, j >> "rotas.csv";
+}
+
+printf "Arquivo rotas.csv gerado com sucesso.\n";
