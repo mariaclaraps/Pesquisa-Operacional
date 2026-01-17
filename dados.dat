@@ -3,7 +3,7 @@ set CLIENTS := 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15;
 set VERTICES := 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15;
 set VEHICLES := 1 2 3;
 
-param Q := 200;        # capacidade de cada veículo
+param Q := 250;        # capacidade de cada veículo
 param depot := 0;
 
 # Coordenadas (x,y) para depósito (0) e clientes (1..15)

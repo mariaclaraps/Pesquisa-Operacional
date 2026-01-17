@@ -5,28 +5,34 @@ option solver cbc;
 
 solve;
 
+display solve_result;
+
+if solve_result != "solved" then {
+    printf "\nATENÇÃO: O modelo não possui solução viável.\n";
+    printf "Status do solver: %s\n", solve_result;
+    printf "Nenhuma rota foi gerada.\n";
+    exit;
+}
+
+
 display Z;
 
-printf "\n=== RESULTADOS ORGANIZADOS ===\n\n";
+printf "\n=== RESULTADOS ===\n\n";
 
-# ==============================
-# DECLARAÇÕES
-# ==============================
 param rota{VEHICLES} symbolic;
 param atual{VEHICLES} integer;
 param visitados{VEHICLES} default 0;
 param carga{VEHICLES} default 0;
+param distancia{VEHICLES} default 0;
 param encontrou{VEHICLES} default 0;
 
-# ==============================
-# PROCESSAMENTO
-# ==============================
 for {k in VEHICLES} {
 
     let rota[k] := "0";
     let atual[k] := depot;
     let visitados[k] := 0;
     let carga[k] := 0;
+    let distancia[k] := 0;
 
     repeat {
 
@@ -36,6 +42,9 @@ for {k in VEHICLES} {
             if x[atual[k], j, k] > 0.5 then {
 
                 let rota[k] := rota[k] & " -> " & j;
+
+                # soma da distância percorrida
+                let distancia[k] := distancia[k] + c[atual[k], j];
 
                 if j != depot then {
                     let carga[k] := carga[k] + d[j];
@@ -54,19 +63,19 @@ for {k in VEHICLES} {
 
     printf "Veículo %d:\n", k;
     printf "  Rota: %s\n", rota[k];
-    printf "  Clientes: %d, Carga: %d kg\n\n",
-           visitados[k], carga[k];
+    printf "  Clientes: %d, Carga: %d kg, Distância: %.3f\n\n",
+           visitados[k], carga[k], distancia[k];
+}
+
+if solve_result = "solved" then {
+
+    printf "veiculo,origem,destino,distancia\n" > "rotas250.csv";
+
+    for {k in VEHICLES, i in VERTICES, j in VERTICES: x[i,j,k] > 0.5} {
+        printf "%d,%d,%d,%f\n", k, i, j, c[i,j] >> "rotas250.csv";
+    }
+
+    printf "Arquivo rotas250.csv gerado com sucesso.\n";
 }
 
 
-# ==============================
-# EXPORTAR ROTAS PARA CSV
-# ==============================
-
-printf "veiculo,origem,destino\n" > "rotas.csv";
-
-for {k in VEHICLES, i in VERTICES, j in VERTICES: x[i,j,k] > 0.5} {
-    printf "%d,%d,%d\n", k, i, j >> "rotas.csv";
-}
-
-printf "Arquivo rotas.csv gerado com sucesso.\n";
